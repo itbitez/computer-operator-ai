@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Computer Operator AI — Build Guide</title>
+<style>
+:root{
+  --green:#006A4E; --green-dk:#00281E; --green-lt:#E6F0EC;
+  --amber:#D4A02B; --amber-lt:#FDF3E3;
+  --red:#B91C1C; --red-lt:#FBEAEA;
+  --bg:#F5F3F0; --surface:#fff; --sunken:#FAF9F7;
+  --text:#1A1A1A; --text2:#4A4A4A; --muted:#8A8A8A;
+  --border:#E5E2DE; --border2:#D6D0C8;
+  --radius:10px; --sidebar:290px;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --green:#3DA88A; --green-dk:#0C1A15; --green-lt:#12271F;
+    --amber:#E0B355; --amber-lt:#2A2114;
+    --red:#E86B6B; --red-lt:#2A1616;
+    --bg:#141513; --surface:#1C1E1B; --sunken:#191B18;
+    --text:#EDEBE7; --text2:#B8B4AD; --muted:#847F77;
+    --border:#2C2F2B; --border2:#3A3E39;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--text);
+}
+.layout{display:flex;min-height:100vh}
+
+/* ── sidebar ─────────────────────────────────── */
+.sidebar{
+  width:var(--sidebar);flex:0 0 var(--sidebar);
+  background:var(--surface);border-right:1px solid var(--border);
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.brand{padding:20px 20px 14px;border-bottom:1px solid var(--border)}
+.brand h1{font-size:15px;font-weight:700;color:var(--green);letter-spacing:.02em}
+.brand p{font-size:12px;color:var(--muted);margin-top:2px}
+
+.prog-wrap{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--sunken)}
+.prog-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.prog-top b{font-size:22px;color:var(--green);font-variant-numeric:tabular-nums}
+.prog-top span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.bar{height:7px;background:var(--border);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .35s ease}
+.prog-sub{font-size:11.5px;color:var(--muted);margin-top:7px}
+
+nav{padding:10px 0 30px}
+nav a{
+  display:flex;justify-content:space-between;gap:8px;align-items:center;
+  padding:7px 20px;font-size:13.5px;color:var(--text2);text-decoration:none;
+  border-left:3px solid transparent;
+}
+nav a:hover{background:var(--sunken);color:var(--text)}
+nav a.on{border-left-color:var(--green);color:var(--green);font-weight:600;background:var(--green-lt)}
+nav .grp{
+  padding:16px 20px 5px;font-size:10.5px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.08em;
+}
+nav .cnt{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+nav a.done .cnt{color:var(--green);font-weight:700}
+
+/* ── main ────────────────────────────────────── */
+main{flex:1;min-width:0;padding:34px 44px 120px;max-width:1000px}
+section{margin-bottom:52px;scroll-margin-top:20px}
+h2{
+  font-size:25px;font-weight:700;color:var(--green);margin-bottom:6px;
+  padding-bottom:9px;border-bottom:2px solid var(--border);
+}
+h2 .n{color:var(--muted);font-weight:400;font-size:17px}
+.lede{color:var(--text2);margin:12px 0 22px;font-size:15.5px}
+h3{font-size:17.5px;font-weight:700;margin:26px 0 9px}
+h4{font-size:14.5px;font-weight:700;margin:18px 0 7px;color:var(--text2)}
+p{margin-bottom:12px}
+strong{font-weight:650}
+ul{margin:0 0 13px 20px}li{margin-bottom:5px}
+
+/* ── checkable ───────────────────────────────── */
+.task{
+  display:flex;gap:12px;align-items:flex-start;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:13px 15px;margin-bottom:9px;transition:.18s;
+}
+.task:hover{border-color:var(--border2)}
+.task.done{background:var(--green-lt);border-color:var(--green)}
+.task.done .tx>b{text-decoration:line-through;opacity:.62}
+.task input{
+  appearance:none;flex:0 0 20px;width:20px;height:20px;margin-top:1px;
+  border:2px solid var(--border2);border-radius:5px;cursor:pointer;position:relative;
+  background:var(--surface);transition:.15s;
+}
+.task input:hover{border-color:var(--green)}
+.task input:checked{background:var(--green);border-color:var(--green)}
+.task input:checked::after{
+  content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;
+  border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg);
+}
+.task input:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.tx{flex:1;min-width:0}
+.tx>b{display:block;font-weight:650;margin-bottom:2px}
+.tx>span{display:block;font-size:14px;color:var(--text2)}
+
+/* ── unit cards ──────────────────────────────── */
+.phase{margin-bottom:26px}
+.phase-hd{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:11px 15px;background:var(--green-dk);color:#fff;border-radius:var(--radius) var(--radius) 0 0;
+}
+@media(prefers-color-scheme:dark){.phase-hd{background:var(--green-lt);color:var(--text)}}
+.phase-hd b{font-size:15px}
+.phase-hd em{font-style:normal;font-size:12px;opacity:.8;font-variant-numeric:tabular-nums}
+.phase-note{
+  font-size:13.5px;color:var(--text2);background:var(--sunken);
+  padding:11px 15px;border:1px solid var(--border);border-top:none;
+}
+.units{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);overflow:hidden}
+.unit{border-top:1px solid var(--border);background:var(--surface)}
+.unit:first-child{border-top:none}
+.unit-hd{display:flex;gap:12px;align-items:flex-start;padding:12px 15px;cursor:pointer}
+.unit-hd:hover{background:var(--sunken)}
+.unit.done .unit-hd{background:var(--green-lt)}
+.unit.done .u-name{text-decoration:line-through;opacity:.6}
+.u-id{
+  flex:0 0 42px;font-size:11.5px;font-weight:700;color:var(--muted);
+  font-variant-numeric:tabular-nums;padding-top:2px;
+}
+.u-body{flex:1;min-width:0}
+.u-name{font-weight:650;font-size:15px}
+.u-why{font-size:13.5px;color:var(--text2);margin-top:3px}
+.u-tog{flex:0 0 auto;color:var(--muted);font-size:12px;padding-top:3px;user-select:none}
+.u-steps{display:none;padding:4px 15px 15px 69px;background:var(--sunken);border-top:1px solid var(--border)}
+.unit.open .u-steps{display:block}
+.u-steps .mini{display:flex;gap:9px;align-items:center;padding:5px 0;font-size:13.5px}
+.u-steps .mini input{
+  appearance:none;flex:0 0 16px;width:16px;height:16px;border:2px solid var(--border2);
+  border-radius:4px;cursor:pointer;position:relative;background:var(--surface);
+}
+.u-steps .mini input:checked{background:var(--green);border-color:var(--green)}
+.u-steps .mini input:checked::after{
+  content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);
+}
+.u-steps .mini.on label{text-decoration:line-through;opacity:.6}
+.u-steps label{cursor:pointer}
+.blocked{
+  display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;background:var(--amber-lt);color:#8a6314;
+  padding:1px 7px;border-radius:99px;margin-left:7px;vertical-align:1px;
+}
+@media(prefers-color-scheme:dark){.blocked{color:var(--amber)}}
+
+/* ── blocks ──────────────────────────────────── */
+.box{border-left:4px solid;border-radius:0 var(--radius) var(--radius) 0;padding:13px 16px;margin:15px 0;font-size:14.5px}
+.box b{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.box.i{background:var(--green-lt);border-color:var(--green)}   .box.i b{color:var(--green)}
+.box.w{background:var(--amber-lt);border-color:var(--amber)}   .box.w b{color:#8a6314}
+.box.d{background:var(--red-lt);border-color:var(--red)}       .box.d b{color:var(--red)}
+@media(prefers-color-scheme:dark){.box.w b{color:var(--amber)}}
+
+.snip{position:relative;margin:13px 0}
+.snip pre{
+  background:var(--green-dk);color:#E8F0EC;border-radius:var(--radius);
+  padding:14px 52px 14px 16px;overflow-x:auto;
+  font:13px/1.6 ui-monospace,"Cascadia Code",Consolas,monospace;white-space:pre;
+}
+.snip.p pre{background:var(--surface);color:var(--text);border:1px solid var(--green);border-left:4px solid var(--green)}
+.snip .lbl{
+  font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--muted);margin-bottom:5px;
+}
+.cp{
+  position:absolute;top:8px;right:8px;background:rgba(255,255,255,.12);color:#fff;
+  border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;
+}
+.snip.p .cp{background:var(--green);color:#fff}
+.cp:hover{opacity:.85}.cp.ok{background:var(--green)}
+
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th{background:var(--green);color:#fff;text-align:left;padding:9px 12px;font-size:12.5px;font-weight:650}
+td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:nth-child(even) td{background:var(--sunken)}
+
+.search{
+  width:100%;padding:11px 14px;border:1px solid var(--border2);border-radius:var(--radius);
+  background:var(--surface);color:var(--text);font-size:14.5px;margin-bottom:16px;
+}
+.search:focus{outline:2px solid var(--green);outline-offset:1px;border-color:var(--green)}
+.tr-item{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:13px 15px;margin-bottom:9px;
+}
+.tr-item h4{margin:0 0 6px;color:var(--red);font-size:14.5px}
+.tr-item p{margin:0;font-size:14px;color:var(--text2)}
+
+.tools{display:flex;gap:9px;flex-wrap:wrap;padding:14px 20px;border-top:1px solid var(--border)}
+.btn{
+  flex:1;min-width:78px;padding:7px 10px;border:1px solid var(--border2);border-radius:7px;
+  background:var(--surface);color:var(--text2);font-size:11.5px;font-weight:600;cursor:pointer;
+}
+.btn:hover{border-color:var(--green);color:var(--green)}
+.btn.danger:hover{border-color:var(--red);color:var(--red)}
+
+.warnbar{display:none;background:var(--red-lt);color:var(--red);padding:11px 20px;font-size:13px;border-bottom:1px solid var(--red)}
+.warnbar.show{display:block}
+
+.menu{display:none;position:fixed;bottom:18px;right:18px;z-index:50;
+  background:var(--green);color:#fff;border:none;border-radius:99px;
+  padding:13px 19px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.24)}
+
+@media(max-width:920px){
+  .sidebar{position:fixed;left:-100%;z-index:60;transition:left .25s;box-shadow:0 0 40px rgba(0,0,0,.2)}
+  .sidebar.open{left:0}
+  main{padding:22px 18px 110px}
+  .menu{display:block}
+  .u-steps{padding-left:20px}
+}
+@media print{
+  .sidebar,.menu,.cp,.tools{display:none}
+  main{padding:0;max-width:100%}
+  .u-steps{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<button class="menu" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰ Steps</button>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand">
+    <h1>COMPUTER OPERATOR AI</h1>
+    <p>Complete build guide</p>
+  </div>
+  <div class="warnbar" id="warn">
+    Progress can't be saved in this browser. Use <b>Export</b> below to keep a backup.
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-top"><b id="pct">0%</b><span id="frac">0 / 0</span></div>
+    <div class="bar"><i id="bar" style="width:0"></i></div>
+    <div class="prog-sub" id="hint">Start with Setup</div>
+  </div>
+  <nav id="nav"></nav>
+  <div class="tools">
+    <button class="btn" onclick="exportP()">Export</button>
+    <button class="btn" onclick="document.getElementById('imp').click()">Import</button>
+    <button class="btn danger" onclick="resetP()">Reset</button>
+    <input type="file" id="imp" hidden accept=".json" onchange="importP(this)">
+  </div>
+</aside>
+
+<main id="main"></main>
+</div>
+
+<script>
+"use strict";
+const KEY="coai-build-guide-v1";
+let state={};let canSave=true;
+
+try{ state=JSON.parse(localStorage.getItem(KEY)||"{}"); }
+catch(e){ state={}; }
+try{ localStorage.setItem(KEY+"-t","1"); localStorage.removeItem(KEY+"-t"); }
+catch(e){ canSave=false; }
+
+function save(){
+  if(!canSave) return;
+  try{ localStorage.setItem(KEY,JSON.stringify(state)); }
+  catch(e){ canSave=false; document.getElementById("warn").classList.add("show"); }
+}
+
+/* ── data ─────────────────────────────────────── */
+const SETUP=[
+ ["s1","Install Node.js (LTS version)","From nodejs.org — click the button marked LTS, not the newest one."],
+ ["s2","Install Docker Desktop","From docker.com. Runs your database without installing it separately."],
+ ["s3","Install Git","From git-scm.com. Keeps a history of every change so you can always go back."],
+ ["s4","Install an AI coding agent","Claude Code, OpenCode, Codex, or Cursor. Any of them works."],
+ ["s5","Install a code editor","VS Code from code.visualstudio.com, so you can look at files."],
+ ["s6","Restart your computer","Not optional. Docker in particular often won't work until you do."],
+ ["s7","Check the installs worked","Run node --version, git --version, docker --version. Each should print a version number."],
+ ["s8","Open the project folder in your terminal","Two commands, one at a time. (1) cd \"E:/Computer Operator AI\"  —  (2) ls  — you should see AGENTS.md and a context folder."],
+ ["s9","⚠ Confirm secrets are protected","Run: git check-ignore -v .env .env.local — you must see TWO lines mentioning .gitignore. If you see nothing at all, STOP and fix it before doing anything else. (Checking node_modules too is optional and only shows a line once that folder actually exists, which happens later in Unit 01 — its absence now is normal.)"],
+ ["s10","Save your starting point","Two commands, one at a time. (1) git add -A  —  (2) git commit -m \"Project plan and safety settings\"  — do NOT type the word 'and' or 'then' between them."]
+];
+
+const READING=[
+ ["r1","Read: what you're building","A subscription site where coaching centres make Word documents by typing or speaking Bengali commands. Real money, real customer property."],
+ ["r2","Read: you are the manager, not the worker","The AI writes the code. You check the work. That checking is the most valuable thing you do."],
+ ["r3","Read: the seven golden rules","Scroll down to the rules section and read all seven. Every serious problem comes from breaking one."],
+ ["r4","Read: the five-step build loop","You'll repeat it 36 times. Learn it once and the rest is just a list."]
+];
+
+const PHASES=[
+ ["Phase 0 — Foundation",
+  "Nothing built on a weak foundation survives. These units create the safety systems that make everything afterwards trustworthy. This phase feels slow because nothing appears on screen yet. That's normal and correct.",[
+  ["01","Scaffold, CI gates, Docker, safe logging, security headers","Installs the automatic checks that block bad code from ever being saved. Security headers are cheap now and painful later.",0],
+  ["02","Design tokens, fonts, colour theme","Defines colours and fonts once, so all 36 units look like one product instead of 36.",0],
+  ["03","Bengali and English language system","Bengali is the main language. Adding this later means rewriting every screen.",0],
+  ["04","UI pieces + automatic accessibility checking","Buttons, inputs and popups built once and reused everywhere.",0],
+  ["05","Database structure and permanent audit records","Where all information lives. Audit records can never be edited or deleted, even by you.",0],
+  ["05a","Backups and a tested restore","Your product promises customers never lose work. Without this, one hardware failure ends the business.",0],
+  ["06","Login, registration, OTP, and login rate limiting","The rate limiting is critical — a 6-digit code with no attempt limit is guessed by a machine in minutes.",0],
+  ["07","Background jobs and the Python document worker","Slow jobs run in the background so the site never freezes while waiting.",1]]],
+
+ ["Phase 1 — Accounts and payments",
+  "Now the product becomes visible and can take money. Payment units deserve your most careful checking — mistakes here cost real money.",[
+  ["08","Public landing page","The first thing a customer sees. Carries the terms and privacy links.",1],
+  ["09","Registration and login screens in Bengali","The screens customers use to get in.",0],
+  ["10","Email and SMS sending","Used for OTP codes and expiry reminders.",1],
+  ["11","Pricing page","Shows plans and prices in Bengali numerals.",0],
+  ["12","bKash payment system","Verifies payments on the server. Never trusts the browser about whether money arrived.",1],
+  ["13","Subscription expiry system","Runs daily, sends reminders, switches expired accounts to read-only.",0],
+  ["14","Subscription and profile screens","Where a customer sees their status and renews.",0]]],
+
+ ["Phase 2 — The AI document engine",
+  "This is the actual product. Unit 16 decides whether customers stay — if the Word documents come out badly formatted, nothing else matters.",[
+  ["15","AI connection, Bengali instructions, spending limits","The spending limit stops one customer running up an enormous AI bill.",1],
+  ["16","Word document builder","Turns the AI plan into a real .docx. The quality of this unit is the quality of the product.",0],
+  ["17","Generate flow with live progress","Handles the request and shows the customer what's happening while they wait.",0],
+  ["18a","Word document reader (Python)","Reads an uploaded .docx so the AI can change it.",0],
+  ["18b","File upload handling","Checks the file is genuinely a .docx and not too large before accepting it.",0],
+  ["19","Chat screen","The main screen customers use, styled like a familiar messaging app.",0],
+  ["20","Voice input","Lets customers speak instead of type. Must disclose that audio passes through Google.",0],
+  ["21","Edit and refine","Lets customers say \"make the heading bigger\" and get an updated document.",0],
+  ["22","Document history storage","Every document kept and downloadable, with a 30-day undo on deletion.",0],
+  ["23","Document history screen","Where customers browse and re-download past work.",0]]],
+
+ ["Phase 3 — Admin tools",
+  "Tools for you, the owner. The audit rules here are strict on purpose: you should not be able to read a customer's private documents without leaving a permanent record.",[
+  ["24","Admin back end with full audit trail","Every admin action permanently recorded.",0],
+  ["25","Admin screens","Where you manage customers and view the audit log.",0],
+  ["26","Settings management","Change prices, AI instructions and limits without touching code.",0]]],
+
+ ["Phase 4 — Hardening and launch",
+  "Making it fast, safe and ready for real customers. Don't skip this because the product already works — this is what makes it survive contact with the public.",[
+  ["27","Usage limits on generation and uploads","Stops abuse and runaway AI costs.",0],
+  ["28","Daily payment reconciliation","Compares your records against bKash automatically and flags mismatches.",0],
+  ["29","Monitoring and error tracking","Tells you something is broken before a customer emails you.",0],
+  ["30","Automatic data cleanup","Deletes temporary files and old logs on schedule.",1],
+  ["31","Full accessibility review","Makes the product usable with a keyboard and a screen reader.",0],
+  ["32","Speed and load testing","Proves 30 people can use it at once without it falling over.",0],
+  ["33","Final security hardening","Dependency scanning, fake-payment attack tests, key rotation practice.",0],
+  ["34","Emergency response plan","What to do, in order, if something goes seriously wrong.",1]]]
+];
+
+const USTEPS=["Instruction sheet written & I read it","Built by the AI","Proof shown (real output, not a summary)","I tried it myself","Committed & pushed"];
+
+const TROUBLE=[
+ ["AI says it's done, but the feature doesn't work","\"The unit is marked complete but [describe exactly what happens]. Show me the actual output of the verification checklist items, then analyse why this was reported as working.\""],
+ ["AI built things you didn't ask for","\"You went beyond the spec. The Non-goals section says [quote it]. Remove everything not in this spec and show me what you removed.\" Extra features are unplanned, untested code — not a bonus."],
+ ["Red text mentioning \"type error\" or \"tsc\"","Normal. \"Typecheck is failing. Show me the full output, explain what it means in plain English, and fix only that.\""],
+ ["\"Port already in use\"","\"Port [number] is in use. Show me how to find and stop what is using it on my operating system.\""],
+ ["Docker won't start / \"cannot connect to the Docker daemon\"","Docker Desktop isn't running. Open it, wait for the whale icon to stop animating, try again. Still failing? Restart your computer."],
+ ["\"Connection refused\" mentioning a database or port 5432","\"The database connection is refused. Check whether the Docker containers are running and show me the status.\""],
+ ["\"Module not found\" / \"cannot find package\"","\"Module [name] is not found. Check whether it is in package.json and install it correctly.\""],
+ ["AI ignores your project rules","It skipped the context files. \"Stop. Re-read AGENTS.md and all six files in context/, then tell me which invariant your approach breaks before continuing.\""],
+ ["AI wants a tool that isn't in your plan","\"architecture.md does not name that. Either solve this with what's already in the stack, or explain why the stack can't do it and let me decide.\""],
+ ["AI keeps trying fixes in a loop","Stop it. \"Stop changing code. Summarise every change you made in this session and what each was meant to fix.\" Then discard the session and restart from your last commit."],
+ ["Tests fail","This is the system working. \"Show me the full test output. Which test failed, what did it expect, what did it get?\" Never ask to delete or skip a failing test."],
+ ["The automatic checks (CI) fail after uploading","\"The CI pipeline failed. Show me which job failed and its full log, explain the cause, and propose a fix before changing anything.\""],
+ ["You think a password or key got saved by mistake","Act now. First change that key at the provider so the old one stops working. Then: \"A secret may have been committed. Check git history and tell me exactly what was exposed and when.\" Changing the key is what actually protects you."],
+ ["A database change / migration fails","\"The migration failed. Show me the error, explain what state the database is in now, and tell me whether it can be safely rolled back before we try anything.\""],
+ ["AI contradicts an earlier decision","\"That contradicts the decision recorded in progress-tracker.md on [date]. Either follow that decision, or explain why it should change and let me decide.\""],
+ ["Everything is broken, you want to start the unit over","Always allowed, costs only time. Two separate commands, one at a time: (1) git reset --hard HEAD  (2) git clean -fd — that returns you to your last commit. Then restart the unit with a fresh session."]
+];
+
+const LAUNCH=[
+ ["Security",[
+  ["l1","All 15 invariants confirmed actually implemented, not just written down"],
+  ["l2","Tests prove logged-out and wrong-customer are refused on every private page"],
+  ["l3","All development keys and passwords replaced with fresh production ones"],
+  ["l4","Secrets in a proper secret store, never in a file"],
+  ["l5","Security headers checked on the real live site, not on your computer"],
+  ["l6","Dependency scan clean, or every exception written down with a reason"],
+  ["l7","Fake and replayed payment notifications tested and rejected"]]],
+ ["Data safety",[
+  ["l8","Backups running automatically, stored off the main server"],
+  ["l9","A restore actually performed and timed — an untested backup is not a backup"],
+  ["l10","Tested with realistic data volume, not a handful of sample rows"],
+  ["l11","Deletion and retention rules genuinely working, not just documented"],
+  ["l12","No private customer content anywhere in the logs"]]],
+ ["Operations",[
+  ["l13","Error tracking live and confirmed receiving reports"],
+  ["l14","Alerts set up so you learn of problems before customers tell you"],
+  ["l15","A rollback plan you have actually practised"],
+  ["l16","Every speed target verified under load"]]],
+ ["Product",[
+  ["l17","Every success criterion in project-overview.md demonstrably met"],
+  ["l18","Accessibility standard met and verified"],
+  ["l19","Every customer journey walked end to end on the live site"],
+  ["l20","progress-tracker.md reflects reality"]]]
+];
+
+/* ── build ────────────────────────────────────── */
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const snip=(txt,isPrompt,label)=>
+ `<div class="snip${isPrompt?" p":""}">${label?`<div class="lbl">${label}</div>`:""}<pre>${esc(txt)}</pre><button class="cp" onclick="cp(this)">Copy</button></div>`;
+const task=(id,t,d)=>
+ `<label class="task" data-id="${id}"><input type="checkbox" data-id="${id}"><span class="tx"><b>${t}</b><span>${d}</span></span></label>`;
+
+let H="";
+const SEC=[];
+function sec(id,num,title,lede,body){SEC.push([id,title]);H+=`<section id="${id}"><h2><span class="n">${num}</span> ${title}</h2><p class="lede">${lede}</p>${body}</section>`;}
+
+/* 1 — start here */
+sec("start","01","Start Here",
+ "Read this once before touching anything. It takes five minutes and saves you weeks.",
+ `<p>Most people build with AI like this: open a tool, type <em>“build me an app”</em>, watch code appear. It feels incredible for about three days. Then new features break old ones, the AI forgets decisions it made last week, and the whole thing becomes impossible to fix.</p>
+  <p>That isn't the AI being bad. That's what happens when nobody wrote down what was being built.</p>
+  <p><strong>This guide works differently. All the thinking is already done and written into files</strong> in your <code>context</code> folder. They tell the AI exactly what to build and what it must never do. Your job isn't to invent the software — it's to hand the AI one small piece at a time and check it did the job properly.</p>
+  <div class="box i"><b>What this means</b>You are the manager. The AI is the worker. A manager doesn't do the work — but a manager does check it. That checking is the single most valuable thing you'll do here, and this guide shows you exactly how.</div>
+  <h3>The seven golden rules</h3>
+  <table><tr><th style="width:34px">#</th><th>Rule</th></tr>
+  <tr><td>1</td><td><strong>One unit at a time.</strong> Never two. Never “and while you're at it”.</td></tr>
+  <tr><td>2</td><td><strong>A brand new chat for every unit.</strong> Old conversation makes the AI worse and costs more.</td></tr>
+  <tr><td>3</td><td><strong>Never accept “done” without proof.</strong> Ask for real output, not a summary.</td></tr>
+  <tr><td>4</td><td><strong>When something breaks, never say “fix it”.</strong> Ask for the cause first, approve, then let it fix.</td></tr>
+  <tr><td>5</td><td><strong>Nothing gets added that the plan doesn't mention.</strong> If the AI wants to, it must stop and ask you.</td></tr>
+  <tr><td>6</td><td><strong>No passwords or keys in any file that gets uploaded.</strong></td></tr>
+  <tr><td>7</td><td><strong>A failed test is good news.</strong> It found a problem before your customers did.</td></tr></table>
+  <h3>Confirm you've read the basics</h3>
+  ${READING.map(r=>task(r[0],r[1],r[2])).join("")}`);
+
+/* 2 — setup */
+sec("setup","02","Set Up Your Computer",
+ "Done once, about an hour — most of it downloads running in the background. Tick each item as you finish it.",
+ `${SETUP.map(s=>task(s[0],s[1],s[2])).join("")}
+  <div class="box d"><b>Do not skip step 9</b>This application will hold bKash credentials, security keys and database passwords. If those ever get saved into your project history they are there permanently, even if you delete the file afterwards. People run automated scanners looking for exactly this.</div>
+  <div class="box i"><b>How to type terminal commands</b><strong>One command per line. Press Enter after each one and wait for it to finish.</strong> Where a step shows <em>(1)</em> and <em>(2)</em>, those are two separate commands — never join them with the words “and” or “then”. The terminal will treat those words as part of the command and give you a confusing error.
+  <br><br>Example — this is right:
+  ${snip('git add -A\ngit commit -m "Project plan and safety settings"',false,'Two lines, Enter after each')}
+  And this is wrong, because “then” gets read as part of the first command:
+  ${snip('git add -A then git commit -m "Project plan and safety settings"',false,'Do not do this')}</div>`);
+
+/* 3 — loop */
+sec("loop","03","The Build Loop",
+ "Five steps, repeated 36 times. Only the file name in Step 2 ever changes. Keep this section open while you work.",
+ `<h3>Step 1 — Ask for the instruction sheet</h3>
+  <p>Open your AI agent in the project folder and start a <strong>new chat</strong>.</p>
+  ${snip(`Read AGENTS.md and context/progress-tracker.md.
+
+Write the spec for the next unit into context/feature-specs/, using
+spec-kit/templates/NN-feature-spec.md as the template.
+
+Be specific enough that two competent engineers would build substantially
+the same thing. Include non-goals and a verification checklist where every
+item is objectively checkable.
+
+Do not write any implementation code.`,true,"Paste this")}
+  <p>A new file appears. Open it and read it. You're checking two things: does the Goal match what you wanted, and is there a <strong>Non-goals</strong> section?</p>
+  <div class="box w"><b>Careful</b>Two minutes reading the sheet saves hours. If the sheet is wrong, the AI will build the wrong thing perfectly — far more expensive to fix than catching it now.</div>
+
+  <h3>Step 2 — Build it</h3>
+  <p><strong>Start a brand new chat session.</strong> Do not continue from Step 1. Change the file name to match what was just created.</p>
+  ${snip(`Read context/feature-specs/01-scaffold-ci-security.md, mark it in progress
+in context/progress-tracker.md, and implement exactly as specified.`,true,"Paste this")}
+  <p>That's the whole instruction. If you feel the need to explain more, the instruction sheet was incomplete — improve the sheet instead.</p>
+
+  <h3>Step 3 — Demand proof</h3>
+  ${snip(`Walk through the verification checklist in the spec one item at a time and
+show me the evidence for each — actual command output and actual behaviour,
+not a summary.
+
+Then run typecheck, lint, and the tests and show me the real output.
+
+If any check failed, say so plainly and show the failure.`,true,"Paste this")}
+  <div class="box d"><b>This is the step that matters most</b>AI agents will say “all checks pass” when they haven't run the checks. Asking for real output makes that impossible. If you get a summary instead, ask again: <em>“Show me the actual terminal output, not a description of it.”</em></div>
+
+  <h3>Step 4 — Try it yourself</h3>
+  <p>Click the buttons. Type something wrong on purpose. Log out and try to reach a page you shouldn't be able to reach. <strong>“Tests passed” and “it works” are different things</strong> — only you can confirm the second.</p>
+
+  <h3>Step 5 — Save and move on</h3>
+  ${snip(`git add -A
+git commit -m "Unit 01: scaffold, CI gates, security headers"
+git push`,false,"Run in terminal")}
+  <div class="box i"><b>What this means</b>Do no more than two or three units in a day. Checking work properly needs concentration, and a tired reviewer approves things they should have questioned.</div>`);
+
+/* 4 — units */
+let U="";
+PHASES.forEach((ph,pi)=>{
+  const ids=ph[2].map(u=>"u"+u[0]);
+  U+=`<div class="phase" data-phase="${pi}"><div class="phase-hd"><b>${ph[0]}</b><em class="pc" data-ids="${ids.join(",")}">0 / ${ids.length}</em></div>
+  <div class="phase-note">${ph[1]}</div><div class="units">`;
+  ph[2].forEach(u=>{
+    const id="u"+u[0];
+    U+=`<div class="unit" data-id="${id}">
+      <div class="unit-hd">
+        <input type="checkbox" data-id="${id}" onclick="event.stopPropagation()" style="appearance:none;flex:0 0 20px;width:20px;height:20px;border:2px solid var(--border2);border-radius:5px;cursor:pointer;position:relative;background:var(--surface);margin-top:1px">
+        <span class="u-id">${u[0]}</span>
+        <span class="u-body"><span class="u-name">${u[1]}${u[3]?'<span class="blocked">waiting on outside answer</span>':""}</span><span class="u-why">${u[2]}</span></span>
+        <span class="u-tog">▾</span>
+      </div>
+      <div class="u-steps">${USTEPS.map((s,i)=>
+        `<div class="mini"><input type="checkbox" data-id="${id}_${i}" id="${id}_${i}"><label for="${id}_${i}">${s}</label></div>`).join("")}</div>
+    </div>`;
+  });
+  U+=`</div></div>`;
+});
+sec("units","04","The 36 Units",
+ "Build in this order. Click a unit to open its five steps. Tick the unit itself when all five are done.",
+ U+`<div class="box w"><b>Careful</b>Units marked <em>waiting on outside answer</em> need a decision from a lawyer or from bKash before they can go live. You can still build them against test settings — the AI will tell you when it hits one.</div>`);
+
+/* 5 — trouble */
+sec("trouble","05","When Something Goes Wrong",
+ "Things will break — that's normal, even for experienced engineers. What matters is how you respond.",
+ `<div class="box d"><b>Never do this</b>Pasting a red error and typing <em>“fix it”</em>. The AI starts changing things without understanding the cause, breaks something else, changes more. Twenty minutes later you have five problems instead of one. This single habit ends more AI projects than anything else.</div>
+  <h3>The right way — four steps</h3>
+  <p><strong>1. Write it down</strong> in <code>context/current-issues.md</code>:</p>
+  ${snip(`## Issue: Logout gives an error
+
+**Steps:** Sign in with Google, then click Logout
+**Expected:** I go back to the home page, signed out
+**Actual:** An error appears and I am still signed in
+
+**Error message:**
+[paste the full red text here]`,false,"Write this into the file")}
+  <div class="box i"><b>What this means</b>That file never gets uploaded anywhere. It matters because error messages often contain passwords and keys without you realising.</div>
+  <p><strong>2. Ask for an explanation, not a fix:</strong></p>
+  ${snip(`Read context/current-issues.md.
+
+Analyse the problem deeply and tell me the root cause and how you would fix it.
+
+Do not change any code yet — wait for my approval.`,true,"Paste this")}
+  <p><strong>3. Judge the answer.</strong> You don't need to be technical. A good explanation names <em>one</em> specific cause. A bad one lists several things that “might” be wrong. If it sounds like guessing:</p>
+  ${snip(`That sounds like a symptom, not the cause. What is actually producing it?`,true,"Paste this")}
+  <p><strong>4. Approve:</strong></p>
+  ${snip(`That analysis is right. Implement that fix and nothing else.`,true,"Paste this")}
+
+  <h3>Find your problem</h3>
+  <input class="search" id="q" placeholder="Type what you're seeing — e.g. docker, port, test, secret…" oninput="filt()">
+  <div id="trl">${TROUBLE.map(t=>`<div class="tr-item"><h4>${t[0]}</h4><p>${t[1]}</p></div>`).join("")}</div>
+
+  <h3>Three sentences that fix most situations</h3>
+  ${snip(`Explain that to me in plain English, as if I do not code.`,true,"")}
+  ${snip(`Show me the actual output, not a summary of it.`,true,"")}
+  ${snip(`Do not change anything yet. Tell me what you plan to do and why, and wait.`,true,"")}`);
+
+/* 6 — security & speed */
+sec("quality","06","Security &amp; Speed",
+ "Your plan already contains 15 security rules and a set of speed targets. You don't need to memorise them — but you do need to check they're followed, because a rule nobody checks is just a sentence in a document.",
+ `<h3>Run after every unit that touches data</h3>
+  ${snip(`Review this unit against the invariants in context/architecture.md and the
+authorization matrix.
+
+Specifically: is authorization enforced on the server for every change and
+every read of private data? Are there tests proving that a logged-out user
+and a different logged-in user are both rejected? Is anything sensitive
+being written to the logs?`,true,"Security check")}
+  <div class="box i"><b>Why “on the server” matters so much</b>Hiding a button in the browser is not security — anyone bypasses it in seconds. The check must happen on your server where the customer can't reach it. This is the most common serious mistake in web applications.</div>
+
+  <h3>The five rules that protect you most</h3>
+  <table><tr><th>Rule</th><th>In plain English</th></tr>
+  <tr><td><strong>Server-side permission checks</strong></td><td>The server decides what someone may see. The browser is never trusted.</td></tr>
+  <tr><td><strong>Unknown records say “not found”</strong></td><td>Asking for another customer's document gets “doesn't exist” — never “exists but you can't have it”. The second answer confirms it exists.</td></tr>
+  <tr><td><strong>Logs hold no private content</strong></td><td>Logs record that something happened, never what the customer wrote.</td></tr>
+  <tr><td><strong>Files private, links expire</strong></td><td>Documents are never publicly linkable. Download links die after 5 minutes.</td></tr>
+  <tr><td><strong>Payments verified with bKash</strong></td><td>The server confirms with bKash directly. A browser saying “payment successful” means nothing.</td></tr></table>
+
+  <h3>Run after every unit that reads data</h3>
+  ${snip(`Review this unit against the performance budgets in architecture.md.
+
+Specifically: are there any N+1 queries? Is every list paginated? Are there
+database indexes on everything being filtered or sorted? What happens if
+the input is ten times larger than expected?`,true,"Speed check")}
+  <div class="box i"><b>What an “N+1 query” is</b>Imagine fetching 100 documents, then asking the database separately for each one's owner. That's 101 trips instead of 1. Fine with 5 test rows, collapses with 500 real ones. Asking this after every data unit catches it while it's still a one-line fix.</div>
+
+  <h3>Your speed targets</h3>
+  <table><tr><th>What</th><th>Target</th><th>In plain English</th></tr>
+  <tr><td>Server response</td><td>under 200ms</td><td>The server answers almost instantly</td></tr>
+  <tr><td>Document ready</td><td>within 15s</td><td>From pressing send to a download button</td></tr>
+  <tr><td>Page appears</td><td>under 2s</td><td>The main content is visible quickly</td></tr>
+  <tr><td>Database query</td><td>under 30ms</td><td>Looking up information is near-instant</td></tr>
+  <tr><td>At the same time</td><td>30 users</td><td>All generating, without crashing</td></tr></table>
+  <div class="box i"><b>Measured at “p95”, not average</b>Average hides your unhappiest customers. If 95 of 100 people get an answer in 200ms, the target is met. Averages let five people wait thirty seconds and still look fine on paper.</div>`);
+
+/* 7 — launch */
+sec("launch","07","Before You Go Live",
+ "Work through this completely. Every item exists because skipping it has hurt a real product somewhere.",
+ LAUNCH.map(g=>`<h3>${g[0]}</h3>${g[1].map(i=>task(i[0],i[1],"")).join("")}`).join("")+
+ `<div class="box w"><b>Careful</b>Expect the first deployment to fail. It nearly always does — a missing setting, a wrong path, a build step that only exists on your computer. Routine, not a sign anything is wrong. Fix, redeploy, repeat.</div>`);
+
+/* 8 — reference */
+sec("ref","08","Quick Reference",
+ "Every prompt and command in one place, plus the words explained.",
+ `<h3>Come back after a break</h3>
+  ${snip(`Read AGENTS.md and context/progress-tracker.md, then tell me where this
+build stands and what is next.`,true,"")}
+  <h3>Terminal commands</h3>
+  <table><tr><th>Command</th><th>What it does</th></tr>
+  ${[["cd \"path\"","Move into your project folder"],["ls","List what's in the current folder"],
+     ["git add -A","Mark all changes ready to save"],["git commit -m \"message\"","Save a checkpoint"],
+     ["git push","Upload your saved work"],["git status","Show what changed since the last save"],
+     ["git reset --hard HEAD","Throw away all changes since the last save"],
+     ["git check-ignore -v .env","Confirm secret files are protected"],
+     ["docker compose up","Start the database and services"],["docker compose down","Stop them"],
+     ["docker compose ps","Show what's running"]].map(r=>`<tr><td><code>${esc(r[0])}</code></td><td>${r[1]}</td></tr>`).join("")}</table>
+  <h3>Words explained</h3>
+  <table><tr><th>Word</th><th>What it means</th></tr>
+  ${[["Unit","One small job, small enough to finish in one sitting"],["Spec","The instruction sheet for one unit"],
+     ["Commit","A save point you can always return to"],["Repository","Your project folder plus its full history"],
+     ["CI","Automatic checks that run before code can be accepted"],["Typecheck","Catches mistakes before the code ever runs"],
+     ["Lint","Checks code follows the agreed style"],["Migration","A tracked, reversible change to the database structure"],
+     ["Invariant","A rule the application must never break, no matter what"],
+     ["Authorization","Deciding what a signed-in person is allowed to do"],
+     ["Rate limiting","Capping how often someone can do something, to stop abuse"],
+     ["Audit log","A permanent record of actions that can never be edited"],
+     ["Pagination","Loading a list in pages instead of all at once"],
+     ["Environment variable","A setting kept outside the code, such as a password"],
+     ["Docker","Runs the database and services without installing each one"]].map(r=>`<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td></tr>`).join("")}</table>
+  <div class="box i"><b>A final word</b>This guide asks you to do things that feel slow: read the sheet first, demand proof, write the problem down before asking for a fix, build one small unit at a time. Every one trades minutes now for hours later. <strong>You don't need to know how to code to build this well — you need to be a careful manager of something that codes.</strong></div>`);
+
+document.getElementById("main").innerHTML=H;
+
+/* nav */
+const GRP=[["Getting started",["start","setup","loop"]],["Building",["units"]],["Help & reference",["trouble","quality","launch","ref"]]];
+let N="";
+GRP.forEach(g=>{
+  N+=`<div class="grp">${g[0]}</div>`;
+  g[1].forEach(id=>{
+    const t=SEC.find(s=>s[0]===id)[1];
+    N+=`<a href="#${id}" data-sec="${id}">${t}<span class="cnt" data-cnt="${id}"></span></a>`;
+  });
+});
+document.getElementById("nav").innerHTML=N;
+
+/* ── behaviour ────────────────────────────────── */
+document.querySelectorAll('input[type=checkbox][data-id]').forEach(cb=>{
+  const id=cb.dataset.id;
+  if(state[id]) cb.checked=true;
+  cb.addEventListener("change",()=>{
+    if(cb.checked) state[id]=1; else delete state[id];
+    save(); paint();
+  });
+});
+
+document.querySelectorAll(".unit-hd").forEach(hd=>{
+  hd.addEventListener("click",e=>{
+    if(e.target.tagName!=="INPUT") hd.parentElement.classList.toggle("open");
+  });
+});
+
+function cp(btn){
+  const t=btn.parentElement.querySelector("pre").textContent;
+  navigator.clipboard.writeText(t).then(()=>{
+    btn.textContent="Copied";btn.classList.add("ok");
+    setTimeout(()=>{btn.textContent="Copy";btn.classList.remove("ok")},1400);
+  }).catch(()=>{btn.textContent="Select it";setTimeout(()=>btn.textContent="Copy",1400)});
+}
+
+function filt(){
+  const q=document.getElementById("q").value.toLowerCase();
+  document.querySelectorAll("#trl .tr-item").forEach(el=>{
+    el.style.display=el.textContent.toLowerCase().includes(q)?"":"none";
+  });
+}
+
+function paint(){
+  document.querySelectorAll(".task").forEach(t=>
+    t.classList.toggle("done",!!state[t.dataset.id]));
+  document.querySelectorAll(".unit").forEach(u=>{
+    u.classList.toggle("done",!!state[u.dataset.id]);
+    u.querySelectorAll(".mini").forEach(m=>
+      m.classList.toggle("on",!!state[m.querySelector("input").dataset.id]));
+  });
+  document.querySelectorAll(".pc").forEach(el=>{
+    const ids=el.dataset.ids.split(",");
+    el.textContent=`${ids.filter(i=>state[i]).length} / ${ids.length}`;
+  });
+  // section counts
+  document.querySelectorAll("[data-cnt]").forEach(el=>{
+    const s=document.getElementById(el.dataset.cnt);
+    const boxes=[...s.querySelectorAll("input[data-id]")].filter(b=>!b.dataset.id.includes("_"));
+    if(!boxes.length){el.textContent="";return}
+    const d=boxes.filter(b=>state[b.dataset.id]).length;
+    el.textContent=`${d}/${boxes.length}`;
+    el.parentElement.classList.toggle("done",d===boxes.length);
+  });
+  // overall = main checkboxes only (not the 5 sub-steps)
+  const all=[...document.querySelectorAll("input[data-id]")].filter(b=>!b.dataset.id.includes("_"));
+  const done=all.filter(b=>state[b.dataset.id]).length;
+  const p=all.length?Math.round(done/all.length*100):0;
+  document.getElementById("pct").textContent=p+"%";
+  document.getElementById("frac").textContent=`${done} / ${all.length}`;
+  document.getElementById("bar").style.width=p+"%";
+  const units=[...document.querySelectorAll(".unit")];
+  const next=units.find(u=>!state[u.dataset.id]);
+  document.getElementById("hint").textContent =
+    p===100 ? "Everything complete." :
+    done===0 ? "Start with Set Up Your Computer" :
+    next ? "Next up: Unit "+next.dataset.id.slice(1) : "Finish the remaining checks";
+}
+
+function exportP(){
+  const b=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(b);
+  a.download="build-progress.json";a.click();
+}
+function importP(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      state=JSON.parse(r.result);save();
+      document.querySelectorAll("input[data-id]").forEach(cb=>cb.checked=!!state[cb.dataset.id]);
+      paint();
+    }catch(e){alert("That file couldn't be read as progress data.")}
+  };
+  r.readAsText(f);inp.value="";
+}
+function resetP(){
+  if(!confirm("Clear all your ticks and start over? This cannot be undone."))return;
+  state={};save();
+  document.querySelectorAll("input[data-id]").forEach(cb=>cb.checked=false);
+  paint();
+}
+
+/* Critical UI first. Nothing below this point may block it — if an optional
+   enhancement throws, your ticks and progress must still be correct. */
+if(!canSave) document.getElementById("warn").classList.add("show");
+paint();
+
+document.querySelectorAll("nav a").forEach(a=>a.addEventListener("click",()=>
+  document.querySelector(".sidebar").classList.remove("open")));
+
+/* Scrollspy — progressive enhancement. Skipped silently where unsupported. */
+try{
+  if("IntersectionObserver" in window){
+    const obs=new IntersectionObserver(es=>{
+      es.forEach(e=>{
+        if(e.isIntersecting){
+          document.querySelectorAll("nav a").forEach(a=>
+            a.classList.toggle("on",a.dataset.sec===e.target.id));
+        }
+      });
+    },{rootMargin:"-10% 0px -80% 0px"});
+    document.querySelectorAll("section").forEach(s=>obs.observe(s));
+  }
+}catch(e){/* navigation still works without highlighting */}
+</script>
+</body>
+</html>

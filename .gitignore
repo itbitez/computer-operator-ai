@@ -1,0 +1,59 @@
+# ─── Secrets. Never commit. ────────────────────────────────────────────────
+# This project holds bKash merchant credentials, JWT signing secrets,
+# Groq API keys, and database credentials. A leak here is unrecoverable.
+.env
+.env.*
+!.env.example
+
+# ─── Scratch file ──────────────────────────────────────────────────────────
+# Holds real error output, which contains tokens, connection strings,
+# and user data. Never commit it, never paste it into a PR.
+context/current-issues.md
+
+# ─── Setup kit ─────────────────────────────────────────────────────────────
+# Vendored copy of the spec-kit setup skill. Tooling, not application code.
+spec-kit/
+
+# ─── Node / Next.js ────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+.vercel
+
+# ─── Python worker ─────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ─── Testing ───────────────────────────────────────────────────────────────
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# ─── Local infrastructure volumes ──────────────────────────────────────────
+postgres-data/
+redis-data/
+minio-data/
+docker-compose.override.yml
+*.sqlite
+*.db
+
+# ─── Editors / OS ──────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ─── Logs ──────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-error.log*

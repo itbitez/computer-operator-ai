@@ -1,0 +1,45 @@
+# Line endings — deterministic across Windows, macOS, Linux, and Docker.
+#
+# Why this file exists: this project runs a Python worker and Postgres inside
+# Linux containers. A shell script saved with Windows line endings (CRLF) fails
+# inside a Linux container with "bad interpreter: /bin/bash^M" — an error that
+# is genuinely hard to diagnose because the file looks completely normal.
+#
+# Forcing LF everywhere removes that whole class of bug before it can happen.
+# Windows editors (VS Code, modern Notepad) handle LF files without any issue.
+
+# Default: treat as text, store and check out with LF.
+* text=auto eol=lf
+
+# Must be LF — these run inside Linux containers.
+*.sh        text eol=lf
+*.bash      text eol=lf
+Dockerfile  text eol=lf
+*.dockerfile text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.py        text eol=lf
+*.sql       text eol=lf
+
+# Must be CRLF — these only ever run on Windows.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary — never convert, never diff as text.
+*.docx binary
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.zip  binary
+
+# Lockfiles: keep them out of diffs so reviews stay readable.
+package-lock.json -diff
