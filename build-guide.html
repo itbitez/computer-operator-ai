@@ -132,21 +132,52 @@ ul{margin:0 0 13px 20px}li{margin-bottom:5px}
 .u-body{flex:1;min-width:0}
 .u-name{font-weight:650;font-size:15px}
 .u-why{font-size:13.5px;color:var(--text2);margin-top:3px}
-.u-tog{flex:0 0 auto;color:var(--muted);font-size:12px;padding-top:3px;user-select:none}
+.u-tog{
+  flex:0 0 auto;color:var(--green);font-size:11px;font-weight:650;padding-top:4px;
+  user-select:none;white-space:nowrap;border:1px solid var(--border2);
+  border-radius:99px;padding:3px 10px;background:var(--surface);
+}
+.unit-hd:hover .u-tog{border-color:var(--green);background:var(--green-lt)}
+.unit.open .u-tog{background:var(--green);color:#fff;border-color:var(--green)}
 .u-steps{display:none;padding:4px 15px 15px 69px;background:var(--sunken);border-top:1px solid var(--border)}
 .unit.open .u-steps{display:block}
-.u-steps .mini{display:flex;gap:9px;align-items:center;padding:5px 0;font-size:13.5px}
-.u-steps .mini input{
-  appearance:none;flex:0 0 16px;width:16px;height:16px;border:2px solid var(--border2);
-  border-radius:4px;cursor:pointer;position:relative;background:var(--surface);
+/* numbered step script inside each unit */
+.ustep{display:flex;gap:11px;padding:13px 0;border-top:1px dashed var(--border2)}
+.ustep:first-child{border-top:none;padding-top:6px}
+.ustep>input{
+  appearance:none;flex:0 0 18px;width:18px;height:18px;margin-top:3px;
+  border:2px solid var(--border2);border-radius:4px;cursor:pointer;position:relative;
+  background:var(--surface);
 }
-.u-steps .mini input:checked{background:var(--green);border-color:var(--green)}
-.u-steps .mini input:checked::after{
-  content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;
+.ustep>input:hover{border-color:var(--green)}
+.ustep>input:checked{background:var(--green);border-color:var(--green)}
+.ustep>input:checked::after{
+  content:"";position:absolute;left:5px;top:1px;width:5px;height:9px;
   border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);
 }
-.u-steps .mini.on label{text-decoration:line-through;opacity:.6}
-.u-steps label{cursor:pointer}
+.sbody{flex:1;min-width:0}
+.sttl{display:block;font-weight:650;font-size:14.5px;margin:4px 0 3px;cursor:pointer}
+.ustep.on .sttl{text-decoration:line-through;opacity:.55}
+.sdesc{font-size:13.5px;color:var(--text2);margin-bottom:7px}
+.badge{
+  display:inline-block;font-size:9.5px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.08em;padding:3px 9px;border-radius:99px;
+}
+.badge.new{background:#B91C1C;color:#fff}
+.badge.same{background:var(--green);color:#fff}
+.badge.term{background:#3A3A3A;color:#fff}
+.badge.you{background:var(--amber);color:#3B2A06}
+.badge.skip{background:var(--border);color:var(--muted)}
+@media(prefers-color-scheme:dark){
+  .badge.new{background:#E86B6B;color:#2A1616}
+  .badge.same{background:var(--green);color:#0C1A15}
+  .badge.term{background:#5A5F58;color:#fff}
+}
+.skipnote{
+  font-size:13px;color:var(--muted);font-style:italic;
+  background:var(--surface);border:1px dashed var(--border2);
+  border-radius:8px;padding:8px 11px;
+}
 .blocked{
   display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;
   letter-spacing:.05em;background:var(--amber-lt);color:#8a6314;
@@ -290,14 +321,16 @@ const READING=[
  ["r1","Read: what you're building","A subscription site where coaching centres make Word documents by typing or speaking Bengali commands. Real money, real customer property."],
  ["r2","Read: you are the manager, not the worker","The AI writes the code. You check the work. That checking is the most valuable thing you do."],
  ["r3","Read: the seven golden rules","Scroll down to the rules section and read all seven. Every serious problem comes from breaking one."],
- ["r4","Read: the five-step build loop","You'll repeat it 36 times. Learn it once and the rest is just a list."]
+ ["r4","Read: the five-step build loop","You'll repeat it once per unit, all the way through. Learn it once and the rest is just a list."]
 ];
 
 const PHASES=[
  ["Phase 0 — Foundation",
   "Nothing built on a weak foundation survives. These units create the safety systems that make everything afterwards trustworthy. This phase feels slow because nothing appears on screen yet. That's normal and correct.",[
-  ["01","Scaffold, CI gates, Docker, safe logging, security headers","Installs the automatic checks that block bad code from ever being saved. Security headers are cheap now and painful later.",0],
-  ["02","Design tokens, fonts, colour theme","Defines colours and fonts once, so all 36 units look like one product instead of 36.",0],
+  ["01a","App skeleton","Next.js scaffold, folder structure, empty vendor stubs, and settings that fail loudly at startup if anything is missing.",0,"01a-scaffold.md"],
+  ["01b","Enforcement mechanisms","The highest-value unit in this phase. Makes leaking private data a compile error, and makes a banned import impossible to merge. Cheap now, painful to retrofit.",0,"01b-enforcement.md"],
+  ["01c","Docker and the merge gates","One-command local database, plus six automatic checks that block bad code from ever being saved.",0,"01c-gates.md"],
+  ["02","Design tokens, fonts, colour theme","Defines colours and fonts once, so every unit looks like one product instead of dozens of different ones.",0,"02-design-tokens-theme.md"],
   ["03","Bengali and English language system","Bengali is the main language. Adding this later means rewriting every screen.",0],
   ["04","UI pieces + automatic accessibility checking","Buttons, inputs and popups built once and reused everywhere.",0],
   ["05","Database structure and permanent audit records","Where all information lives. Audit records can never be edited or deleted, even by you.",0],
@@ -346,7 +379,92 @@ const PHASES=[
   ["34","Emergency response plan","What to do, in order, if something goes seriously wrong.",1]]]
 ];
 
-const USTEPS=["Instruction sheet written & I read it","Built by the AI","Proof shown (real output, not a summary)","I tried it myself","Committed & pushed"];
+/* Units that touch user data, the database, money, or permissions.
+   These get the security and speed review steps; the others say "skip". */
+const DATA_UNITS=new Set(["05","05a","06","09","12","13","14","15","17","18b",
+                          "21","22","23","24","25","26","27","28","30","33"]);
+
+/* Builds the full numbered script inside one unit card. */
+function unitScript(u){
+  const id="u"+u[0], num=u[0], name=u[1];
+  const specFile=u[4]?"context/feature-specs/"+u[4]:null;
+  const isData=DATA_UNITS.has(num);
+  let n=0, out="";
+
+  const step=(badge,cls,title,desc,body)=>{
+    n++;
+    out+=`<div class="ustep" data-s="${id}_${n}">
+      <input type="checkbox" data-id="${id}_${n}" id="${id}_${n}">
+      <div class="sbody">
+        <span class="badge ${cls}">${badge}</span>
+        <label class="sttl" for="${id}_${n}">${n}. ${title}</label>
+        <div class="sdesc">${desc}</div>
+        ${body||""}
+      </div></div>`;
+  };
+
+  /* 1 — spec */
+  if(specFile){
+    step("ALREADY DONE","skip","The instruction sheet already exists",
+      `Its spec was written earlier — the file is <code>${specFile}</code>. Nothing to do. Go to step 2.`);
+  }else{
+    step("START A NEW CHAT","new","Ask the AI to write the instruction sheet",
+      "Open your AI agent in the project folder and start a completely new chat. Paste this:",
+      snip(`Read AGENTS.md and context/progress-tracker.md.\n\nWrite the spec for Unit ${num} into context/feature-specs/, using the\ntemplate in spec-kit/templates/NN-feature-spec.md.\n\nInclude non-goals and a verification checklist where every item is\nobjectively checkable. Do not write any implementation code.`,true,"Copy this"));
+  }
+
+  /* 2 — read it */
+  step("YOU DO THIS","you","Open the new file and read it",
+    "You are checking two things only: does the <strong>Goal</strong> describe what you actually wanted, and is there a <strong>Non-goals</strong> section? If something looks wrong, say so in plain English and ask for a corrected version before going on. Two minutes here saves hours.");
+
+  /* 3 — build */
+  step("START A NEW CHAT","new","Ask the AI to build it",
+    "Close the previous chat. Start a <strong>brand new one</strong> — this matters, old conversation makes the AI worse and costs more. Paste this and nothing else:",
+    snip(specFile
+      ? `Read ${specFile}, mark it in progress in\ncontext/progress-tracker.md, and implement exactly as specified.`
+      : `Read the spec file for Unit ${num} in context/feature-specs/, mark it in\nprogress in context/progress-tracker.md, and implement exactly as specified.`,
+      true,"Copy this"));
+
+  /* 4 — proof */
+  step("SAME CHAT","same","When it says it is finished, demand proof",
+    "Do <strong>not</strong> believe “done” yet. Stay in the same chat and paste this:",
+    snip(`Walk through the verification checklist in the spec one item at a time and\nshow me the evidence for each — actual command output and actual behaviour,\nnot a summary.\n\nThen run every check this project currently has set up and show me the real\noutput. If a check does not exist yet because a later unit installs it, say\nso instead of running it.\n\nIf any check failed, say so plainly and show the failure.`,true,"Copy this"));
+
+  /* 5 — security */
+  if(isData){
+    step("SAME CHAT","same","Ask for a security review",
+      "This unit touches user data, money, or permissions, so it needs this. Same chat, paste this:",
+      snip(`Review this unit against the invariants in context/architecture.md and the\nauthorization matrix.\n\nSpecifically: is authorization enforced on the server for every change and\nevery read of private data? Are there tests proving that a logged-out user\nand a different logged-in user are both rejected? Is anything sensitive\nbeing written to the logs?`,true,"Copy this"));
+  }else{
+    step("SKIP THIS ONE","skip","Security review — not needed here",
+      `<div class="skipnote">Unit ${num} does not touch user data, the database, money or permissions, so there is nothing for a security review to check. Tick this and go to step ${n+1}.</div>`);
+  }
+
+  /* 6 — speed */
+  if(isData){
+    step("SAME CHAT","same","Ask for a speed review",
+      "This unit reads or writes data, so slow queries can hide here. Same chat, paste this:",
+      snip(`Review this unit against the performance budgets in architecture.md.\n\nSpecifically: are there any N+1 queries? Is every list paginated? Are there\ndatabase indexes on everything being filtered or sorted? What happens if\nthe input is ten times larger than expected?`,true,"Copy this"));
+  }else{
+    step("SKIP THIS ONE","skip","Speed review — not needed here",
+      `<div class="skipnote">Unit ${num} does not read or write data, so there are no queries to review. Tick this and go to step ${n+1}.</div>`);
+  }
+
+  /* 7 — try it */
+  step("YOU DO THIS","you","Use it yourself",
+    "If this unit produced something you can see or click, go and use it. Click the buttons. Type something wrong on purpose. Log out and try to open a page you should not be allowed to see. <strong>“The tests passed” and “it works” are different things</strong> — only you can confirm the second one. If there is nothing visible yet, tick this and move on.");
+
+  /* 8 — save */
+  step("IN YOUR TERMINAL","term","Save your work",
+    "Not in the AI chat — in your terminal. <strong>Three separate commands.</strong> Press Enter after each one and wait for it to finish before typing the next:",
+    snip(`git add -A\ngit commit -m "Unit ${num}: ${name.toLowerCase()}"\ngit push`,false,"Three commands, one at a time"));
+
+  /* 9 — close out */
+  step("YOU DO THIS","you","Tick the unit itself, then stop",
+    `Scroll up and tick the <strong>Unit ${num}</strong> box at the top of this card. Then take a break, or move to the next unit with a fresh chat. <strong>Do no more than two or three units in one day</strong> — checking work properly needs concentration, and a tired reviewer approves things they should have questioned.`);
+
+  return out;
+}
 
 const TROUBLE=[
  ["AI says it's done, but the feature doesn't work","\"The unit is marked complete but [describe exactly what happens]. Show me the actual output of the verification checklist items, then analyse why this was reported as working.\""],
@@ -437,7 +555,7 @@ sec("setup","02","Set Up Your Computer",
 
 /* 3 — loop */
 sec("loop","03","The Build Loop",
- "Five steps, repeated 36 times. Only the file name in Step 2 ever changes. Keep this section open while you work.",
+ "This section explains WHY each step exists — read it once so the steps make sense. You do not need to memorise anything here: every unit card in the next section carries its own complete numbered script, with every prompt written out in order and a marker telling you exactly when to start a new chat.",
  `<h3>Step 1 — Ask for the instruction sheet</h3>
   <p>Open your AI agent in the project folder and start a <strong>new chat</strong>.</p>
   ${snip(`Read AGENTS.md and context/progress-tracker.md.
@@ -454,9 +572,10 @@ Do not write any implementation code.`,true,"Paste this")}
   <div class="box w"><b>Careful</b>Two minutes reading the sheet saves hours. If the sheet is wrong, the AI will build the wrong thing perfectly — far more expensive to fix than catching it now.</div>
 
   <h3>Step 2 — Build it</h3>
-  <p><strong>Start a brand new chat session.</strong> Do not continue from Step 1. Change the file name to match what was just created.</p>
-  ${snip(`Read context/feature-specs/01-scaffold-ci-security.md, mark it in progress
-in context/progress-tracker.md, and implement exactly as specified.`,true,"Paste this")}
+  <p><strong>Start a brand new chat session.</strong> Do not continue from Step 1.</p>
+  <div class="box i"><b>You do not need to work out the file name</b>Every unit in the next section carries its own ready-made prompt with the correct file name already filled in. Open the unit you are on and use the Copy button there. The example below only shows the shape.</div>
+  ${snip(`Read context/feature-specs/01b-enforcement.md, mark it in progress in
+context/progress-tracker.md, and implement exactly as specified.`,true,"Example — the shape of it")}
   <p>That's the whole instruction. If you feel the need to explain more, the instruction sheet was incomplete — improve the sheet instead.</p>
 
   <h3>Step 3 — Demand proof</h3>
@@ -464,9 +583,11 @@ in context/progress-tracker.md, and implement exactly as specified.`,true,"Paste
 show me the evidence for each — actual command output and actual behaviour,
 not a summary.
 
-Then run typecheck, lint, and the tests and show me the real output.
+Then run every check this project currently has set up (typecheck, lint, and
+tests if a test script exists yet) and show me the real output.
 
-If any check failed, say so plainly and show the failure.`,true,"Paste this")}
+If any check failed, say so plainly and show the failure. If a check does not
+exist yet because a later unit installs it, say that instead of running it.`,true,"Paste this")}
   <div class="box d"><b>This is the step that matters most</b>AI agents will say “all checks pass” when they haven't run the checks. Asking for real output makes that impossible. If you get a summary instead, ask again: <em>“Show me the actual terminal output, not a description of it.”</em></div>
 
   <h3>Step 4 — Try it yourself</h3>
@@ -491,16 +612,15 @@ PHASES.forEach((ph,pi)=>{
         <input type="checkbox" data-id="${id}" onclick="event.stopPropagation()" style="appearance:none;flex:0 0 20px;width:20px;height:20px;border:2px solid var(--border2);border-radius:5px;cursor:pointer;position:relative;background:var(--surface);margin-top:1px">
         <span class="u-id">${u[0]}</span>
         <span class="u-body"><span class="u-name">${u[1]}${u[3]?'<span class="blocked">waiting on outside answer</span>':""}</span><span class="u-why">${u[2]}</span></span>
-        <span class="u-tog">▾</span>
+        <span class="u-tog">Prompt &amp; steps ▾</span>
       </div>
-      <div class="u-steps">${USTEPS.map((s,i)=>
-        `<div class="mini"><input type="checkbox" data-id="${id}_${i}" id="${id}_${i}"><label for="${id}_${i}">${s}</label></div>`).join("")}</div>
+      <div class="u-steps">${unitScript(u)}</div>
     </div>`;
   });
   U+=`</div></div>`;
 });
-sec("units","04","The 36 Units",
- "Build in this order. Click a unit to open its five steps. Tick the unit itself when all five are done.",
+sec("units","04","The Build Units",
+ "Build in this order. <strong>Click any unit to open its script</strong> — a numbered list of every step from first prompt to final save, in order, with nothing left for you to remember. Each step has a coloured badge telling you where it happens: <span class='badge new'>START A NEW CHAT</span> <span class='badge same'>SAME CHAT</span> <span class='badge term'>IN YOUR TERMINAL</span> <span class='badge you'>YOU DO THIS</span> <span class='badge skip'>SKIP THIS ONE</span>. Do the steps top to bottom, tick each as you finish it, and the unit is done when they all are. The unit you're currently on opens automatically.",
  U+`<div class="box w"><b>Careful</b>Units marked <em>waiting on outside answer</em> need a decision from a lawyer or from bKash before they can go live. You can still build them against test settings — the AI will tell you when it hits one.</div>`);
 
 /* 5 — trouble */
@@ -662,7 +782,7 @@ function paint(){
     t.classList.toggle("done",!!state[t.dataset.id]));
   document.querySelectorAll(".unit").forEach(u=>{
     u.classList.toggle("done",!!state[u.dataset.id]);
-    u.querySelectorAll(".mini").forEach(m=>
+    u.querySelectorAll(".ustep").forEach(m=>
       m.classList.toggle("on",!!state[m.querySelector("input").dataset.id]));
   });
   document.querySelectorAll(".pc").forEach(el=>{
@@ -722,6 +842,12 @@ function resetP(){
    enhancement throws, your ticks and progress must still be correct. */
 if(!canSave) document.getElementById("warn").classList.add("show");
 paint();
+
+/* Open the unit you're actually on, so its prompt is visible without hunting. */
+(function openCurrent(){
+  const next=[...document.querySelectorAll(".unit")].find(u=>!state[u.dataset.id]);
+  if(next) next.classList.add("open");
+})();
 
 document.querySelectorAll("nav a").forEach(a=>a.addEventListener("click",()=>
   document.querySelector(".sidebar").classList.remove("open")));

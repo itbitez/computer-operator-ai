@@ -3,7 +3,7 @@
 > The single source of truth for where this build stands. Updated after every unit.
 > Agents: read this before anything else in `context/`.
 
-**Last updated:** 2026-08-18 (setup review complete; unit plan resequenced; no units built)
+**Last updated:** 2026-08-18 (Unit 01b built)
 
 ---
 
@@ -14,7 +14,8 @@ skeleton. Nothing built on a missing foundation survives the retrofit.
 
 ## Current goal
 
-Write the spec for Unit 01 (Scaffold + CI gates) and implement it.
+Implement Unit 01c (gates: Docker Compose, CI, branch protection). Specs for 01c and 02
+are written.
 
 ## In progress
 
@@ -22,7 +23,22 @@ Nothing.
 
 ## Complete
 
-Nothing yet — setup only.
+- **Unit 01b — Enforcement** (2026-08-18): six security headers verified against a
+  running server (`curl -I`, dev and prod); nonce-based CSP from `src/proxy.ts` with the
+  nonce proven applied to Next's inline scripts and proven to block a real inline script
+  in headless Chrome (console violation, then reverted); metadata-only logger in
+  `src/lib/logging/logger.ts` (closed field set, excess-property compile errors proven
+  for a body/message/raw `Error`/stack, then reverted); per-request `x-request-id`
+  (request + response) with one-line-JSON request logs; isolation ESLint rules —
+  `no-restricted-imports` bans `groq-sdk`, `@aws-sdk/*`, any bkash-named package,
+  `bullmq`, `nodemailer`, `next-auth` outside their `src/lib/<module>/` dirs, and a local
+  `isolation/no-process-env` rule bans `process.env` outside `src/lib/config/` (both
+  proven to fail on violating files, then reverted). `tsc --noEmit` and ESLint clean;
+  prod build + `next start` verified.
+- **Unit 01a — App skeleton** (2026-08-18): Next.js scaffold in repo root,
+  strict tsconfig, Tailwind default theme, placeholder page, folder skeleton,
+  six isolation stubs, Zod-validated env config with boot-time fail-fast.
+  Specs written: 01b, 01c, 02.
 
 ## Blocked
 
@@ -49,8 +65,10 @@ onboarding now.**
 ### Phase 0 — Foundation
 | # | Unit | State |
 |---|---|---|
-| 01 | Scaffold + CI gates + Docker Compose + metadata-only logging + **security headers (CSP, HSTS, nosniff, referrer-policy, frame-ancestors)** | ☐ |
-| 02 | Design tokens, self-hosted fonts, Tailwind theme | ☐ |
+| 01a | App skeleton — Next.js scaffold, folder structure, isolation stubs, validated env config | ☑ spec ✓ |
+| 01b | Enforcement — security headers (nonce CSP, HSTS, nosniff, referrer, frame-ancestors), type-enforced metadata-only logger, isolation ESLint rule | ☑ spec ✓ |
+| 01c | Gates — Docker Compose (postgres/redis/web/nginx), CI pipeline (6 blocking jobs), branch protection | ☐ spec ✓ |
+| 02 | Design tokens, self-hosted fonts, Tailwind theme | ☐ spec ✓ |
 | 03 | i18n foundation (bn default, en fallback) | ☐ |
 | 04 | UI primitives + axe-core in CI | ☐ |
 | 05 | Database schema + migrations + append-only audit tables | ☐ |
@@ -111,6 +129,10 @@ onboarding now.**
 
 | Date | Decision | Reasoning |
 |---|---|---|
+| 2026-08-18 | Unit 01a ships Next.js 16.3.1 / React 19.2.8 / TypeScript 5.9.3 / Tailwind 4 / ESLint 9 / Zod 4.4.3, developed on Node 24.18.0 | Resolved majors recorded per spec; training data lags these |
+| 2026-08-18 | Boot-time env validation via `src/instrumentation.ts` `register()`, which imports `lib/config/env.ts` | The spec requires validation "at module load" and a boot that fails naming the missing variable. `register()` is the only Next hook that runs on server start (dev and prod, not build); importing the module there makes the module-load validation happen at boot |
+| 2026-08-18 | Layout props typed explicitly (`Readonly<{ children: React.ReactNode }>`) instead of the scaffold's generated `LayoutProps<"/">` | `LayoutProps` exists only after `next typegen`/`dev`/`build` generates `.next/types`, so `npx tsc --noEmit` fails on a clean checkout — exactly what the verification checklist runs. Explicit props keep the check green without a generated-types step; later units can adopt typed routes deliberately |
+| 2026-08-18 | Env vars validated: `NODE_ENV`, `DATABASE_URL`, `REDIS_URL` only | Per spec ("start with only what exists now"); `NODE_ENV` is supplied by the Next CLI itself — `.env` cannot override it during `next dev`/`next start` |
 | 2026-08-14 | Single VPS + Docker Compose (no Vercel) | Cross-region latency would break the 15s budget; one private network; survives the residency decision |
 | 2026-08-14 | Node owns BullMQ; Python is a stateless HTTP worker | BullMQ is Node-first; Python BullMQ clients lag. Contract versioning absorbs the coupling |
 | 2026-08-14 | JWT sessions, 15-min access / 7-day refresh | Stateless; revocation by re-checking `is_active` + expiry server-side on every protected route |
@@ -128,6 +150,17 @@ onboarding now.**
 | 2026-08-18 | Unit 18 split into 18a (Python parser) / 18b (Node upload) | `parser.py` is named in the architecture but no unit owned it. Unit 18 read as a Node unit, so the agent would have either attempted DOCX parsing in Node — wrong, `python-docx` is Python — or silently expanded scope across the language boundary |
 | 2026-08-18 | Single VPS accepted for launch, with availability risk recorded (see Durability & availability in architecture.md) | The latency argument for one machine holds. The availability cost was previously unstated, which made it look overlooked rather than chosen. Mitigation is backup + tested restore (05a), not redundancy, until scale justifies it |
 | 2026-08-18 | `spec-kit/` gitignored | Setup tooling, not application code. Keeping it tracked puts it in every diff and every agent file search |
+| 2026-08-18 | `.gitattributes` added, forcing LF | `core.autocrlf=true` on Windows checks files out with CRLF. A shell script with CRLF fails inside a Linux container with `bad interpreter: /bin/bash^M` — hard to diagnose because the file looks normal. Unit 01c introduces Docker; this had to land first |
+| 2026-08-18 | Unit 01 split into 01a (skeleton) / 01b (enforcement) / 01c (gates) | The single spec had 16 verification items across 8 concerns — roughly 2–3 hours. Agents degrade in long sessions, and degrading inside the unit that installs the safety mechanisms is the worst place for it. Split at coherent boundaries, not arbitrary size |
+| 2026-08-18 | `text-muted` token darkened `#8A8A8A` → `#6E6E6E` | Original is 3.1:1 on `secondary-100` and 3.5:1 on white — below the 4.5:1 AA bar ui-context demands of itself. New value: 4.6:1 / 5.1:1. Applied to `ui-context.md` before Unit 02 ships |
+| 2026-08-18 | New token `border-interactive` `#8C8C8C`; `border-light/medium/heavy` are decorative-only | All three existing borders are 1.4–1.8:1 on `secondary-100`; WCAG 1.4.11 needs 3:1 where a boundary identifies an interactive component. `#8C8C8C` measures 3.0:1 / 3.4:1 |
+| 2026-08-18 | Colour values live once, as CSS custom properties in `globals.css`; Tailwind theme references `var(--color-*)` | Single source of truth; the verify script and tests parse the CSS. Works under both Tailwind v3 config and v4 `@theme`, so the theme survives whichever major Unit 01 installs |
+| 2026-08-18 | CSP ships from `src/proxy.ts` (per-request nonce); the other five headers ship from `next.config.ts` `headers()` | A nonce is per-request, so CSP cannot live in the static config. Both are app code — the "not nginx" decision holds. The config applies to `/:path*`; the proxy matcher excludes only `_next/static`, `_next/image`, `favicon.ico`, and prefetches, so API routes also get the requestId and request log (the spec applies headers to every route) |
+| 2026-08-18 | Dev and prod CSP differ in three dev-only relaxations: `'unsafe-eval'` in `script-src`, `'unsafe-inline'` in `style-src`, and no `upgrade-insecure-requests` | React dev uses eval for error-stack reconstruction; dev injects styles that cannot carry the nonce; upgrading a priori-insecure subresources breaks a plain-HTTP dev server. Production CSP has no `unsafe-inline` or `unsafe-eval` anywhere and includes `upgrade-insecure-requests`. These follow the official Next.js CSP guide's dev/prod split |
+| 2026-08-18 | `page.tsx` opts into dynamic rendering via `await connection()` from `next/server` | Nonce CSP requires per-request SSR: statically built HTML is generated when no request headers exist, so Next could not stamp its inline scripts (`self.__next_f` etc.) with the nonce and the browser would block them. Build output confirms `/` is `ƒ` (dynamic) |
+| 2026-08-18 | `process.env` ban implemented as a local flat-config rule `isolation/no-process-env` rather than `eslint-plugin-n` | The architecture names no ESLint plugin, and the ban is ~20 lines of rule code. `instrumentation.ts`'s `NEXT_RUNTIME` check moved into `src/lib/config/runtime.ts` so the ban has zero `eslint-disable` exceptions |
+| 2026-08-18 | ESLint `no-restricted-imports` `patterns` (regex) bans: `groq-sdk`, `@aws-sdk/*`, any package name containing `bkash`, `bullmq`, `nodemailer`, `next-auth` — everywhere except `src/lib/{ai,storage,payments,notifications,queue,auth}/**` | Invariant 3 as a merge gate. bKash ships no official npm SDK (Unit 12 is raw HTTPS), so a bkash-name regex catches any community SDK; the SMS vendor is unresolved (D1), so its SDK joins the rule in Unit 10 alongside `nodemailer` — both per user decision on 2026-08-18 |
+| 2026-08-18 | `x-request-id` (UUID) is set on both request and response headers by the proxy, and every proxied request is logged by the metadata-only logger | Correlation without touching the closed log schema: the requestId rides in the log line, the response header, and downstream via the request header |
 
 ## Declined baseline items
 
@@ -159,3 +192,39 @@ onboarding now.**
   product), 20 (Web Speech varies per Chrome build), 32 (15s budget may force trade-offs).
 - The old repo branch is `development` with no commits; first real commit lands with
   Unit 01.
+- Unit 02's spec was written before Unit 01 was built. It assumes Unit 01 shipped exactly
+  its spec (Tailwind installed, test runner, CI workflow). If Unit 01 deviates on any of
+  those, reconcile against `02-design-tokens-theme.md` and record it here.
+- The spec-kit templates live in `~/.claude/skills/spec-kit/templates/` — the vendored
+  `spec-kit/` folder named in earlier notes was gitignored and is not kept in the repo.
+- `create-next-app` refuses to run in this repo root: "Computer Operator AI" is not a
+  valid npm package name. Scaffold into a temp dir with a valid name, move the files in,
+  and set `"name": "computer-operator-ai"` in package.json.
+- Next.js 16 renamed `middleware.ts` to `proxy.ts` (`export function proxy`). Unit 01b's
+  nonce CSP will live in `src/proxy.ts`; `middleware.ts` is deprecated with a codemod
+  `npx @next/codemod@canary middleware-to-proxy`.
+- Next.js 16 reads the `content-security-policy` **request** header set by proxy code and
+  extracts the nonce, applying it to all of its own inline scripts (`self.__next_f` etc.).
+  01b should set the CSP header on both the request and the response in `src/proxy.ts`.
+- `src/instrumentation.ts` imports `lib/config/env.ts` at boot, so the dev server cannot
+  start without a valid `.env` — `cp .env.example .env` first. Build does not run
+  `register()`, so CI builds (01c) do not need env vars until `next start` runs.
+- The 01a scaffold keeps the default Tailwind theme untouched (tokens are Unit 02), and
+  removed the scaffold's Google-font import from the root layout so Unit 02 can install
+  self-hosted fonts cleanly.
+- `curl` in this PowerShell aliases `Invoke-WebRequest` — verification used `curl.exe -I`
+  explicitly.
+- The 01b real-browser CSP demo used headless Chrome with
+  `--enable-logging=stderr --dump-dom`; CSP console violations surface on stderr. Both
+  Chrome and Edge are installed on this machine. Temp demo files used the
+  `__*-demo.ts` naming convention and were deleted after each demonstration.
+- Background servers for verification: `Start-Process npm.cmd` with stdout/stderr
+  redirected to `%TEMP%\opencode\`; the tool kills the launching shell, not the server —
+  stop it with `taskkill /PID <pid> /T /F`.
+- Next.js 16 proxy nonce confirmed: the `content-security-policy` request header is
+  parsed during SSR, and Next stamps its own inline scripts/styles with the nonce
+  automatically — verified by matching the header nonce to the `nonce=` attributes in
+  the served HTML (single-request capture with `curl.exe -D`).
+- `next build`/`next start` run fine with proxy + `headers()`; the build output shows
+  `ƒ Proxy (Middleware)` and `/` as dynamic. Prod CSP was verified over `next start`
+  with `curl.exe -I` and headless Chrome (no violations).

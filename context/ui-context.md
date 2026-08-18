@@ -29,8 +29,9 @@ name, never the value. Full ramp in CSS custom properties; anchors below.
 | `accent-400` | `#D4A02B` | Amber — highlights, premium moments, processing states |
 | `accent-50…900` | ramp | Amber scale |
 | `success` / `error` / `warning` / `info` | `#0F7B3A` / `#B91C1C` / `#B45309` / `#1C6FB4` | Semantic states |
-| `text-primary` / `text-secondary` / `text-muted` / `text-inverse` | `#1A1A1A` / `#4A4A4A` / `#8A8A8A` / `#FFFFFF` | Text hierarchy (never pure black for body) |
-| `border-light` / `border-medium` / `border-heavy` | `#E5E2DE` / `#D6D0C8` / `#BDB5AB` | Borders |
+| `text-primary` / `text-secondary` / `text-muted` / `text-inverse` | `#1A1A1A` / `#4A4A4A` / `#6E6E6E` / `#FFFFFF` | Text hierarchy (never pure black for body); muted passes 4.5:1 on light surfaces |
+| `border-light` / `border-medium` / `border-heavy` | `#E5E2DE` / `#D6D0C8` / `#BDB5AB` | Decorative dividers and card borders (below 3:1 — never the only boundary of an interactive control) |
+| `border-interactive` | `#8C8C8C` | Boundaries of interactive controls (inputs, toggles) — ≥ 3:1 on light surfaces |
 
 ## Typography
 
@@ -49,6 +50,8 @@ Spacing on an 8px scale via Tailwind defaults: 4, 8, 12, 16, 20, 24, 32, 40, 48,
 Radii: `sm 4px` (buttons, inputs), `md 8px` (cards, chat bubbles), `lg 12px` (modals),
 `xl 16px` (large containers), `full` (avatars, badges). Shadows, three named levels:
 `sm` (cards), `md` (dropdowns, modals), `lg` (dialogs, overlays) — subtle, low opacity.
+Pinned values: `sm` `0 1px 2px 0 rgb(26 26 26 / 0.05)`, `md` `0 2px 8px 0 rgb(26 26 26 / 0.08)`,
+`lg` `0 8px 24px 0 rgb(26 26 26 / 0.12)` — tint is the `text-primary` channel.
 
 **No raw values in components, and no arbitrary utility values.** Extend the theme.
 
@@ -82,7 +85,7 @@ language. All strings live in `public/locales/{bn,en}/common.json`.
 
 Mobile-first, single-column, WhatsApp-style chat — even on desktop. Breakpoints:
 `xs 320`, `sm 480`, `md 640`, `lg 768`, `xl 1024`, `2xl 1280`. Chat column is full-width
-below `lg`, `max-w-[768px]` centered above. There is **no documents sidebar**; history is
+below `lg`, `max-w-chat` (768px) centered above. There is **no documents sidebar**; history is
 a separate view reached from the chat header. Do not invent layouts beyond this — the
 single-column decision is deliberate and approved.
 
@@ -94,7 +97,9 @@ Bar: **WCAG 2.1 AA**, verified by axe-core in CI plus manual keyboard/visual che
 - Full keyboard reachability with visible focus states (`:focus-visible`, ring contrast
   ≥ 3:1). Every action performable with Enter/Space.
 - Text contrast ≥ 4.5:1 (large text 3:1); interactive elements ≥ 3:1 against adjacent
-  colors; all token pairs checked.
+  colors; all token pairs checked. (2026-08-18: `text-muted` darkened to `#6E6E6E` — the
+  original `#8A8A8A` failed 4.5:1 on every light surface. `border-light/medium/heavy` are
+  decorative only; interactive control boundaries use `border-interactive` ≥ 3:1.)
 - ARIA landmarks (`banner`, `main`, `dialog`); modals trap focus and restore it on close.
 - Form and toast errors announced via `aria-live="polite"` / `role="alert"`.
 - Voice input: consent tooltip is focusable and keyboard-operable; recording state
