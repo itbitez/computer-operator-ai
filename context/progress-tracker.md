@@ -3,7 +3,7 @@
 > The single source of truth for where this build stands. Updated after every unit.
 > Agents: read this before anything else in `context/`.
 
-**Last updated:** 2026-08-18 (Unit 01b built)
+**Last updated:** 2026-08-19 (Unit 01c built)
 
 ---
 
@@ -22,6 +22,18 @@ are written.
 Nothing.
 
 ## Complete
+
+- **Unit 01c — Gates** (2026-08-19): Docker Compose stack (postgres 16-alpine,
+  redis 7-alpine, web with hot reload, nginx reverse proxy) verified end to end —
+  page loads through nginx with all six headers intact, `down`/`up` cycle proven
+  to preserve Postgres rows and Redis keys in the named volumes; production
+  overlay removes host publishing (Postgres/Redis internal-only). CI pipeline
+  with six blocking jobs (typecheck, lint at zero warnings, test, gitleaks over
+  full history, `npm audit` failing on high/critical, gitignore guard) + branch
+  protection on `main` requiring all six. Vitest harness with 9 tests (env
+  validator malformed-env rejection, logger runtime field dropping, route smoke
+  test against a real `next dev` server). Gitignore guard proven to fail on a
+  staged dummy `.env`, then reverted. gitleaks clean over full history.
 
 - **Unit 01b — Enforcement** (2026-08-18): six security headers verified against a
   running server (`curl -I`, dev and prod); nonce-based CSP from `src/proxy.ts` with the
@@ -67,7 +79,7 @@ onboarding now.**
 |---|---|---|
 | 01a | App skeleton — Next.js scaffold, folder structure, isolation stubs, validated env config | ☑ spec ✓ |
 | 01b | Enforcement — security headers (nonce CSP, HSTS, nosniff, referrer, frame-ancestors), type-enforced metadata-only logger, isolation ESLint rule | ☑ spec ✓ |
-| 01c | Gates — Docker Compose (postgres/redis/web/nginx), CI pipeline (6 blocking jobs), branch protection | ☐ spec ✓ |
+| 01c | Gates — Docker Compose (postgres/redis/web/nginx), CI pipeline (6 blocking jobs), branch protection | ☑ spec ✓ |
 | 02 | Design tokens, self-hosted fonts, Tailwind theme | ☐ spec ✓ |
 | 03 | i18n foundation (bn default, en fallback) | ☐ |
 | 04 | UI primitives + axe-core in CI | ☐ |
@@ -161,6 +173,15 @@ onboarding now.**
 | 2026-08-18 | `process.env` ban implemented as a local flat-config rule `isolation/no-process-env` rather than `eslint-plugin-n` | The architecture names no ESLint plugin, and the ban is ~20 lines of rule code. `instrumentation.ts`'s `NEXT_RUNTIME` check moved into `src/lib/config/runtime.ts` so the ban has zero `eslint-disable` exceptions |
 | 2026-08-18 | ESLint `no-restricted-imports` `patterns` (regex) bans: `groq-sdk`, `@aws-sdk/*`, any package name containing `bkash`, `bullmq`, `nodemailer`, `next-auth` — everywhere except `src/lib/{ai,storage,payments,notifications,queue,auth}/**` | Invariant 3 as a merge gate. bKash ships no official npm SDK (Unit 12 is raw HTTPS), so a bkash-name regex catches any community SDK; the SMS vendor is unresolved (D1), so its SDK joins the rule in Unit 10 alongside `nodemailer` — both per user decision on 2026-08-18 |
 | 2026-08-18 | `x-request-id` (UUID) is set on both request and response headers by the proxy, and every proxied request is logged by the metadata-only logger | Correlation without touching the closed log schema: the requestId rides in the log line, the response header, and downstream via the request header |
+| 2026-08-19 | Vitest 4.1.11 is the test runner (user decision 2026-08-19; architecture named none). Tests live in `tests/` at the repo root, not `src/` | The ESLint isolation rules (`no-restricted-imports`, `no-process-env`) scope to `src/**` — tests are not application code and need `process.env` to construct environments. Tests import app modules via the `@/` alias. Unit 02's spec assumes a runner exists; this is it |
+| 2026-08-19 | Smoke test boots a real `next dev` on port 3123 (spawns `node next/dist/bin/next` directly — no `.cmd`/shell wrapper) and polls for 200 | Proves the actual server path, not a rendered component. It spawns with explicit test env values so it never depends on a real `.env`; a concurrently running dev server holds `.next`'s lock, so run tests with the dev server stopped |
+| 2026-08-19 | Compose production shape is an overlay file (`docker-compose.yml` + `docker-compose.prod.yml` with `ports: !reset []`), not a `--profile` flag | Compose cannot conditionally remove a port mapping via profiles. The overlay is the canonical mechanism. `!reset` requires Compose ≥ 2.24 (machine runs v5.4) |
+| 2026-08-19 | Dev publishes Postgres/Redis on `127.0.0.1` only; production publishes neither — applied to Redis as well as Postgres | The spec pins Postgres internal-only in production; Redis is the queue/rate-limit store and has the same exposure, so the spec's intent extends to it. Localhost-only binding even in dev is the safe default |
+| 2026-08-19 | `WATCHPACK_POLLING=true` in the web compose service | Bind-mount file watching misses events on Windows/Docker; Next's own docs recommend polling there. Hot reload otherwise silently breaks |
+| 2026-08-19 | Lint gate baked into the npm script (`eslint . --max-warnings=0`), not just CI | The bar "zero errors and zero warnings" should be identical locally and in CI; ESLint 9.39 supports `--max-warnings` |
+| 2026-08-19 | Branch protection on `main`: six required status contexts (typecheck, lint, test, secret-scan, audit, gitignore-guard), strict, `enforce_admins`, no force-push/delete. **No review-approval requirement** | A solo account cannot approve its own PR, so `required_pull_request_reviews` would make merging impossible. Status checks + `enforce_admins` are the merge gates; PR discipline is process |
+| 2026-08-19 | **Repo made public** (user decision, 2026-08-19) and `main` created from `development` (70f32ea) | GitHub Free blocks branch protection on private repos (403: "Upgrade to GitHub Pro"); protection needs an existing branch. Consequence accepted: the codebase and history are public — commit hygiene now has zero margin, which is what the six gates enforce |
+| 2026-08-19 | gitleaks runs via `gitleaks/gitleaks-action@v2` with `fetch-depth: 0` in CI; locally verified via `docker run zricethezav/gitleaks` over the mounted repo | The spec requires scanning full history, not just the diff — shallow checkouts would scan only the PR's new commits |
 
 ## Declined baseline items
 
@@ -228,3 +249,21 @@ onboarding now.**
 - `next build`/`next start` run fine with proxy + `headers()`; the build output shows
   `ƒ Proxy (Middleware)` and `/` as dynamic. Prod CSP was verified over `next start`
   with `curl.exe -I` and headless Chrome (no violations).
+- Docker Desktop on this machine needed a Windows reboot + WSL2 install after a
+  first-run failure (backend stuck for 11+ hours with "backend is not running";
+  engine API returned 500 on every call). After reboot it works. If the engine is
+  ever down, check `%LOCALAPPDATA%\Docker\log\host\com.docker.backend.exe.log`.
+- gh CLI lives at `%LOCALAPPDATA%\Programs\gh\gh.exe` (portable zip — the winget
+  MSI hung on a stalled msiexec). It was added to the **user** PATH: new terminals
+  pick it up, old ones need a restart. A stray elevated `msiexec` from that attempt
+  may still be running — end it in Task Manager if it lingers.
+- `next dev` regenerates `next-env.d.ts` to point at `.next/dev/types/`; the
+  committed version points at `.next/types/`. Either works (skipLibCheck suppresses
+  the missing file on clean checkouts). Revert this churn, don't commit it.
+- The smoke test (and any second dev server) conflicts with a running dev server
+  over the `.next` lock — run `npm run test` with the dev server stopped.
+- Volume names are `computer-operator-ai_postgres-data` / `redis-data` (project
+  prefix + the names in `.gitignore`).
+- GitHub CLI auth went through `gh auth login` in the user's own terminal after the
+  agent-driven device flow timed out twice — device flows need the human to act
+  within the polling window.
