@@ -33,7 +33,8 @@ Nothing.
   protection on `main` requiring all six. Vitest harness with 9 tests (env
   validator malformed-env rejection, logger runtime field dropping, route smoke
   test against a real `next dev` server). Gitignore guard proven to fail on a
-  staged dummy `.env`, then reverted. gitleaks clean over full history.
+  staged dummy `.env`, then reverted. gitleaks clean over full history. PR #1
+  (development → main) ran all six CI jobs green; branch protection requires them.
 
 - **Unit 01b — Enforcement** (2026-08-18): six security headers verified against a
   running server (`curl -I`, dev and prod); nonce-based CSP from `src/proxy.ts` with the
