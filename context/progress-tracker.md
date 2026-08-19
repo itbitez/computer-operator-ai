@@ -195,6 +195,11 @@ onboarding now.**
 
 ## Session notes
 
+- Transient 502/404 for a few seconds after `docker compose up` while the dev server
+  boots; settles to 200 unaided. Accepted for dev. For production (Unit 32/33): add a
+  healthcheck on `web` and `depends_on: condition: service_healthy` on nginx so the proxy
+  never fronts a half-booted app.
+
 <!-- Anything a future session or a new developer needs and cannot infer from code:
      gotchas, version pins, non-obvious constraints, things that look wrong but aren't. -->
 

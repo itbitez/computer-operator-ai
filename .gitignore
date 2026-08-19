@@ -14,6 +14,11 @@ context/current-issues.md
 # Vendored copy of the spec-kit setup skill. Tooling, not application code.
 spec-kit/
 
+# ─── Reference material ────────────────────────────────────────────────────
+# Third-party notes and transcripts kept locally for reference. Not ours to
+# republish, and this repository is public.
+MERN Stack Like Senior Depeloper Using AI.txt
+
 # ─── Node / Next.js ────────────────────────────────────────────────────────
 node_modules/
 .next/
