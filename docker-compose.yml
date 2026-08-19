@@ -1,0 +1,77 @@
+# Local development stack. One command: `docker compose up -d`.
+#
+# All credentials come from .env (never inline one here). The production
+# overlay docker-compose.prod.yml removes the published Postgres/Redis ports
+# so those services are reachable only on the internal network.
+name: computer-operator-ai
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    ports:
+      # Localhost-only even in dev: the host-run app connects through
+      # DATABASE_URL, external clients never need it.
+      - "127.0.0.1:5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "127.0.0.1:6379:6379"
+
+  web:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Inside the container, localhost is the container itself — the URLs
+      # must point at the compose services. Credentials still come from .env
+      # via the interpolation below.
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379
+      # File watching over bind mounts misses events without polling.
+      WATCHPACK_POLLING: "true"
+    volumes:
+      # Source bind mount for hot reload; the anonymous volume keeps the
+      # Linux node_modules built into the image from being hidden by it.
+      - ./:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+
+volumes:
+  postgres-data:
+  redis-data:

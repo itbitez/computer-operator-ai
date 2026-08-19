@@ -1,0 +1,12 @@
+# Production overlay. Run with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Compose cannot remove a port mapping conditionally inside one file, so the
+# production shape is this overlay: `!reset` clears the published ports and
+# Postgres and Redis stay reachable only on the internal network (nginx is
+# the single host-facing entry point).
+services:
+  postgres:
+    ports: !reset []
+  redis:
+    ports: !reset []

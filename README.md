@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Computer Operator AI
 
-## Getting Started
+A subscription-based, Bengali-first web platform that lets coaching center owners
+generate, edit, and format `.docx` documents through written or voice commands in
+natural Bengali, with payments via bKash.
 
-First, run the development server:
+## Prerequisites
+
+- Node.js 24+
+- Docker with Compose v2 (Compose v5 verified)
+
+## Quick start (Docker, one command)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env   # fill in credentials; .env is gitignored
+docker compose up -d
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open <http://localhost> — nginx reverse-proxies to the Next.js dev server
+(hot reload on) with Postgres 16 and Redis 7 alongside. Stop with
+`docker compose down`; data survives via the named volumes `postgres-data` and
+`redis-data` (only `down -v` destroys them).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production profile
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
 
-## Learn More
+Postgres and Redis are **not** published to the host — internal network only;
+nginx is the single host-facing entry point.
 
-To learn more about Next.js, take a look at the following resources:
+## Developing without Docker
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm ci
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Runs the app on <http://localhost:3000> using the same `.env`. Stop any running
+dev server before running the test suite (two dev servers cannot share `.next`).
 
-## Deploy on Vercel
+## Quality gates
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Every pull request runs six blocking CI jobs: typecheck, lint (zero errors and
+zero warnings), tests, gitleaks secret scan over full git history, dependency
+audit (fails on high/critical), and the gitignore guard. Locally:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run typecheck
+npm run lint        # zero errors and zero warnings
+npm run test        # vitest run
+node scripts/check-gitignore.mjs
+```
+
+## Structure
+
+- `src/` — Next.js app (routes, lib isolation modules, config)
+- `tests/` — Vitest test suite (env validator, logger, smoke test)
+- `scripts/` — merge-gate scripts
+- `nginx/` — reverse proxy config
+- `context/` — specs, architecture, progress tracker (read before contributing)
